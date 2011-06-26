@@ -72,6 +72,9 @@ public class GroovyBeautifier {
         formatLists(edits);
 		correctBraces(edits);
 
+        TextEdit removedSemicolons = new SemicolonRemover(formatter.selection, formatter.document).format();
+        edits.addChild(removedSemicolons);
+
 		return edits;
 	}
 

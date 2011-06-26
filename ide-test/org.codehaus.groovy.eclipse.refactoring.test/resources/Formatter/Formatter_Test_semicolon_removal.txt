@@ -1,0 +1,51 @@
+###prop
+setPreferences=true
+indentation=space
+tabsize=4
+###src
+/* multi-line; text1;
+ * multi-line; text2;
+ */
+
+/* single-line; multi-line; text; */
+
+// single-line; text;
+
+import java.lang.Math;
+
+class A {
+    def method() {
+        def a = 1; def b = 2;
+        def c = 'spaces before and after the semicolon'   ;   
+        def d = { -> };
+
+        method1();
+        method1(); method2();
+
+        for (int i = 0; i < 10; i++) { 1; 2; }
+    }
+}
+###exp
+/* multi-line; text1;
+ * multi-line; text2;
+ */
+
+/* single-line; multi-line; text; */
+
+// single-line; text;
+
+import java.lang.Math
+
+class A {
+    def method() {
+        def a = 1; def b = 2
+        def c = 'spaces before and after the semicolon'
+        def d = { -> }
+
+        method1()
+        method1(); method2()
+
+        for (int i = 0; i < 10; i++) { 1; 2; }
+    }
+}
+###end
