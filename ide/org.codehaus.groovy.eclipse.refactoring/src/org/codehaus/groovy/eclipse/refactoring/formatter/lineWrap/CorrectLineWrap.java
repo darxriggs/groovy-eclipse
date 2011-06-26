@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2007, 2009 Martin Kempf, Reto Kleeb, Michael Klenk
  *
  * IFS Institute for Software, HSR Rapperswil, Switzerland
@@ -18,23 +18,22 @@
  */
 package org.codehaus.groovy.eclipse.refactoring.formatter.lineWrap;
 
-import antlr.Token;
-import org.codehaus.groovy.eclipse.refactoring.formatter.GroovyBeautifier;
+import org.codehaus.groovy.eclipse.refactoring.formatter.DefaultGroovyFormatter;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.text.edits.ReplaceEdit;
 
+import antlr.Token;
+
 /**
  * @author Mike Klenk mklenk@hsr.ch
- *
  */
 public abstract class CorrectLineWrap {
-	
-	protected GroovyBeautifier beautifier;
-	
-	public CorrectLineWrap(GroovyBeautifier beautifier) {
-		this.beautifier = beautifier;
-	}
-	
-	public abstract ReplaceEdit correctLineWrap(int pos, Token token) throws BadLocationException;
 
+    protected DefaultGroovyFormatter formatter;
+
+    public CorrectLineWrap(DefaultGroovyFormatter formatter) {
+        this.formatter = formatter;
+    }
+
+    public abstract ReplaceEdit correctLineWrap(int pos, Token token) throws BadLocationException;
 }

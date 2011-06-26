@@ -289,13 +289,13 @@ public class GroovyBeautifier {
 		CorrectLineWrap lCurlyCorrector = null;
 		CorrectLineWrap rCurlyCorrector = null;
 		if(preferences.getBracesStart() == FormatterPreferences.SAME_LINE)
-			lCurlyCorrector = new SameLine(this);
+            lCurlyCorrector = new SameLine(formatter);
 		if(preferences.getBracesStart() == FormatterPreferences.NEXT_LINE)
-			lCurlyCorrector = new NextLine(this);
+            lCurlyCorrector = new NextLine(formatter);
 		if(preferences.getBracesEnd() == FormatterPreferences.SAME_LINE)
-			rCurlyCorrector = new SameLine(this);
+            rCurlyCorrector = new SameLine(formatter);
 		if(preferences.getBracesEnd() == FormatterPreferences.NEXT_LINE)
-			rCurlyCorrector = new NextLine(this);
+            rCurlyCorrector = new NextLine(formatter);
 
 		assert lCurlyCorrector != null;
 		assert rCurlyCorrector != null;
