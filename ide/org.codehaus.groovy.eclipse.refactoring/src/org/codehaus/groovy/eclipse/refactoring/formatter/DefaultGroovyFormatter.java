@@ -120,30 +120,6 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
 
 	}
 
-	/**
-     * @param prevToken
-     * @param token
-     * @return
-     */
-    private boolean equalTokens(Token t1, Token t2) {
-        return t1.getType() == t2.getType() && t1.getColumn() == t2.getColumn() && t1.getLine() == t2.getLine()
-               && nullEquals(t1.getFilename(), t2.getFilename()) && nullEquals(t1.getText(), t2.getText());
-    }
-
-    /**
-     * @param s1
-     * @param s2
-     * @return
-     */
-    private boolean nullEquals(String s1, String s2) {
-        if (s1 == null && s2 == null) {
-            return true;
-        } else if (s1 == null || s2 == null) {
-            return false;
-        }
-        return s1.equals(s2);
-    }
-
     @Override
 	public TextEdit format() {
 		formattedDocument = new Document(document.get());
