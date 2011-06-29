@@ -26,7 +26,7 @@ public class SemicolonRemover extends GroovyFormatter {
             String line = document.get(lineInfo.getOffset(), lineInfo.getLength());
 
             if (hasUnnecessarySemicolon(line)) {
-                int semicolonOffset = lineInfo.getOffset() + line.lastIndexOf(';');
+                int semicolonOffset = lineInfo.getOffset() + stripTrailingComments(line).lastIndexOf(';');
                 TextEdit deleteSemicolon = new DeleteEdit(semicolonOffset, 1);
                 textEdit.addChild(deleteSemicolon);
             }
@@ -35,12 +35,37 @@ public class SemicolonRemover extends GroovyFormatter {
         return textEdit;
     }
 
-    private boolean hasUnnecessarySemicolon(String line) {
-        String trimmedLine = line.replace('\t', ' ').trim();
+    public static boolean hasUnnecessarySemicolon(String line) {
+        String trimmedLine = stripTrailingComments(line).replace('\t', ' ').trim();
 
         boolean isComment = trimmedLine.startsWith("/*") || trimmedLine.startsWith("*") || trimmedLine.startsWith("//");
         boolean hasTrailingSemicolon = trimmedLine.endsWith(";");
 
         return !isComment && hasTrailingSemicolon;
+    }
+
+    public static String stripTrailingComments(String line) {
+        if (line == null) {
+            return null;
+        }
+
+        int unstrippedLength;
+        do {
+            unstrippedLength = line.length();
+            line = stripTrailingComment(line);
+        } while (unstrippedLength != line.length());
+
+        return line;
+    }
+
+    static String stripTrailingComment(String line) {
+        String fullMultiLineComment     = "(?:/[*](?:.(?![*]/))*.?[*]/)$";
+        String startingMultiLineComment = "(?:/[*](?:.(?![*]/))*)$";
+        String singleLineComment        = "//.*$";
+
+        return line.replaceAll("\\s+$", "")
+                   .replaceAll(fullMultiLineComment, "")
+                   .replaceAll(startingMultiLineComment, "")
+                   .replaceAll(singleLineComment, "");
     }
 }
