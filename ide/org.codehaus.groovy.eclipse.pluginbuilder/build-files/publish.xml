@@ -1,0 +1,47 @@
+<project name="Publish to webdav location" default="publish" basedir=".">
+
+	<!-- ================================= 
+          target: publish              
+       ================================= -->
+  <target name="publish" description="Publishes build files to update site location" depends="-init">
+  	<!--
+  	1. zip the old
+  	2. delete the old 
+  	3. copy the new
+  	-->
+  	
+  	<mkdir dir="${publishLocation}"/>
+  	<mkdir dir="${publishLocation}/old"/>
+  	<zip destfile="${publishLocation}/old/archive-${org.codehaus.groovy.eclipse.ui}.zip">
+  		<zipfileset dir="${buildDirectory}/updateSite">
+  			 <include name="**/*"/>
+  			 <exclude name="old"/>
+		     <exclude name="old/*"/>
+  		</zipfileset>
+  	</zip>
+
+  	<delete verbose="true">
+			<fileset dir="${publishLocation}">
+			    <exclude name="old"/>
+			    <exclude name="old/*"/>
+			</fileset>
+		</delete>
+
+  	<copy todir="${publishLocation}">
+  		<fileset dir="${buildDirectory}/updateSite">
+  		</fileset>
+  	</copy>
+  	<copy file="${buildDirectory}/finalPluginsVersions.properties" todir="${publishLocation}"/>
+  </target>
+	
+	
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: -init                      
+    - - - - - - - - - - - - - - - - - -->
+  <target name="-init">
+  	<property file="../build_local_${eclipse.target.version}.properties"/>
+  	<property file="${buildDirectory}/finalPluginsVersions.properties"/>
+  </target>
+
+
+</project>
