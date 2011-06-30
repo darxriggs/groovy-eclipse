@@ -47,7 +47,6 @@ import antlr.Token;
 
 /**
  * @author Mike Klenk mklenk@hsr.ch
- *
  */
 public class GroovyBeautifier {
 
@@ -57,9 +56,7 @@ public class GroovyBeautifier {
 	private final IFormatterPreferences preferences;
 	private final Set<Token> ignoreToken;
 
-
-	public GroovyBeautifier(DefaultGroovyFormatter defaultGroovyFormatter,
-			IFormatterPreferences pref) {
+    public GroovyBeautifier(DefaultGroovyFormatter defaultGroovyFormatter, IFormatterPreferences pref) {
 		this.formatter = defaultGroovyFormatter;
 		this.preferences = pref;
 		ignoreToken = new HashSet<Token>();
@@ -71,11 +68,9 @@ public class GroovyBeautifier {
         combineClosures(edits);
         formatLists(edits);
 		correctBraces(edits);
+        removeUnnecessarySemicolons(edits);
 
-        TextEdit removedSemicolons = new SemicolonRemover(formatter.selection, formatter.document).format();
-        edits.addChild(removedSemicolons);
-
-		return edits;
+        return edits;
 	}
 
     private void formatLists(MultiTextEdit edits) {
@@ -351,8 +346,16 @@ public class GroovyBeautifier {
 		}
 	}
 
+    private void removeUnnecessarySemicolons(MultiTextEdit edits) throws BadLocationException {
+        if (preferences.isRemoveUnnecessarySemicolons()) {
+            GroovyFormatter semicolonRemover = new SemicolonRemover(formatter.selection, formatter.document);
+            TextEdit semicolonRemovals = semicolonRemover.format();
+            edits.addChild(semicolonRemovals);
+        }
+    }
+
 	private void addEdit(TextEdit edit,TextEdit container) {
-		if(edit != null && edit.getOffset() >= formatter.formatOffset &&
+		if (edit != null && edit.getOffset() >= formatter.formatOffset &&
 				edit.getOffset() + edit.getLength() <= formatter.formatOffset + formatter.formatLength) {
             if (DEBUG_EDITS) {
                 // print out where this edit is taking place

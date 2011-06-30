@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2007, 2009 Martin Kempf, Reto Kleeb, Michael Klenk
  *
  * IFS Institute for Software, HSR Rapperswil, Switzerland
@@ -43,5 +43,7 @@ public class FormatterPreferenceInitializer extends AbstractPreferenceInitialize
         store.setDefault(PreferenceConstants.GROOVY_FORMATTER_BRACES_END, "next");
 
         store.setDefault(PreferenceConstants.GROOVY_FORMATTER_MAX_LINELENGTH, 80);
+
+        store.setDefault(PreferenceConstants.GROOVY_FORMATTER_REMOVE_UNNECESSARY_SEMICOLONS, false);
     }
 }

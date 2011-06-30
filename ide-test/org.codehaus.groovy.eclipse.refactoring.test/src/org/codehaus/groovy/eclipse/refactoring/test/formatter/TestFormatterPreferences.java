@@ -210,6 +210,23 @@ public class TestFormatterPreferences extends EclipseTestCase {
         }
     }
 
+    /**
+     * Semicolon preferences should come from the preferences store used by the groovy preferences page
+     */
+    public void testSemicolonPrefs() throws Exception {
+        FormatterPreferencesPage preferencesPage = new FormatterPreferencesPage();
+        IPreferenceStore groovyPrefs = preferencesPage.getPreferenceStore();
+        assertTrue("Using the wrong preferences store?", groovyPrefs.contains(PreferenceConstants.GROOVY_FORMATTER_REMOVE_UNNECESSARY_SEMICOLONS));
+
+        groovyPrefs.setValue(PreferenceConstants.GROOVY_FORMATTER_REMOVE_UNNECESSARY_SEMICOLONS, true);
+        FormatterPreferences formatPrefs = new FormatterPreferences(gunit);
+        assertTrue(formatPrefs.isRemoveUnnecessarySemicolons() == true);
+
+        groovyPrefs.setValue(PreferenceConstants.GROOVY_FORMATTER_REMOVE_UNNECESSARY_SEMICOLONS, false);
+        formatPrefs = new FormatterPreferences(gunit);
+        assertTrue(formatPrefs.isRemoveUnnecessarySemicolons() == false);
+    }
+
     protected void setJavaPreference(String name, String value) {
         Hashtable options = JavaCore.getOptions();
         options.put(name, value);

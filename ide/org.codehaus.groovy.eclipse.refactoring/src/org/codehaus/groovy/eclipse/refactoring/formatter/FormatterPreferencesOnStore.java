@@ -62,6 +62,7 @@ public class FormatterPreferencesOnStore implements IFormatterPreferences {
     private static final boolean DEFAULT_SMART_PASTE = true;
 
     private static final boolean DEFAULT_INDENT_EMPTY_LINES = false;
+    private static final boolean DEFAULT_REMOVE_UNNECESSARY_SEMICOLONS = false;
 
     // //// preferences cached in fields below ////////////
 
@@ -82,6 +83,7 @@ public class FormatterPreferencesOnStore implements IFormatterPreferences {
     private boolean smartPaste;
 
     private boolean indentEmptyLines;
+    private boolean removeUnnecessarySemicolons;
 
 	////////////////////////////////////////////////////
 
@@ -161,6 +163,12 @@ public class FormatterPreferencesOnStore implements IFormatterPreferences {
             smartPaste = true;
         else if ("false".equals(pSmartPaste))
             smartPaste = false;
+
+        removeUnnecessarySemicolons = DEFAULT_REMOVE_UNNECESSARY_SEMICOLONS;
+        String pRemoveUnnecessarySemicolons = preferences.getString(PreferenceConstants.GROOVY_FORMATTER_REMOVE_UNNECESSARY_SEMICOLONS);
+        if (pRemoveUnnecessarySemicolons != null) {
+            removeUnnecessarySemicolons = pRemoveUnnecessarySemicolons.equals("true");
+        }
     }
 
     public int getIndentationMultiline() {
@@ -199,4 +207,7 @@ public class FormatterPreferencesOnStore implements IFormatterPreferences {
         return tabSize;
     }
 
+    public boolean isRemoveUnnecessarySemicolons() {
+        return removeUnnecessarySemicolons;
+    }
 }

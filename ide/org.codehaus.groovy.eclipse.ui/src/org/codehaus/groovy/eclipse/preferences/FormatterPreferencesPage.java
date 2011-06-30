@@ -20,6 +20,7 @@ package org.codehaus.groovy.eclipse.preferences;
 
 import org.codehaus.groovy.eclipse.GroovyPlugin;
 import org.codehaus.groovy.eclipse.refactoring.PreferenceConstants;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.swt.SWT;
@@ -57,6 +58,9 @@ public class FormatterPreferencesPage extends FieldEditorOverlayPage implements 
                 2);
         multiInd.setValidRange(0, 10);
         addField(multiInd);
+
+        addField(new BooleanFieldEditor(PreferenceConstants.GROOVY_FORMATTER_REMOVE_UNNECESSARY_SEMICOLONS,
+                "Remove unnecessary semicolons", getFieldEditorParent()));
 
         PreferenceLinkArea area = new PreferenceLinkArea(getFieldEditorParent(),
                 SWT.WRAP,

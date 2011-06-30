@@ -2,6 +2,7 @@
 setPreferences=true
 indentation=space
 tabsize=4
+removeUnnecessarySemicolons=true
 ###src
 /* multi-line; text1;
  * multi-line; text2;

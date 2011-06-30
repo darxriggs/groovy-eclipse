@@ -69,7 +69,12 @@ public class TestPrefInitializer {
 
         String indentEmptyLines = properties.get("indentEmptyLines");
         if (indentEmptyLines != null) {
-            pref.setValue( DefaultCodeFormatterConstants.FORMATTER_INDENT_EMPTY_LINES, indentEmptyLines);
+            pref.setValue(DefaultCodeFormatterConstants.FORMATTER_INDENT_EMPTY_LINES, indentEmptyLines);
+        }
+
+        String removeUnnecessarySemicolons = properties.get("removeUnnecessarySemicolons");
+        if (removeUnnecessarySemicolons != null) {
+            pref.setValue(PreferenceConstants.GROOVY_FORMATTER_REMOVE_UNNECESSARY_SEMICOLONS, removeUnnecessarySemicolons);
         }
 
         return pref;
