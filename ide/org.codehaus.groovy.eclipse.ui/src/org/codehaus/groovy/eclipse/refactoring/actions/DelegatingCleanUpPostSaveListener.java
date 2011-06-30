@@ -40,8 +40,8 @@ import org.eclipse.jface.text.IRegion;
  */
 public class DelegatingCleanUpPostSaveListener implements IPostSaveListener {
 
-    private final org.eclipse.jdt.internal.corext.fix.CleanUpPostSaveListener jdtCleanUp;
-    private final GroovyCleanupPostSaveListener groovyCleanUp;
+    private final IPostSaveListener jdtCleanUp;
+    private final IPostSaveListener groovyCleanUp;
 
     public DelegatingCleanUpPostSaveListener(org.eclipse.jdt.internal.corext.fix.CleanUpPostSaveListener jdtCleanUp,
             GroovyCleanupPostSaveListener groovyCleanUp) {
@@ -60,10 +60,9 @@ public class DelegatingCleanUpPostSaveListener implements IPostSaveListener {
                 SaveParticipantDescriptor descriptor = registry.getSaveParticipantDescriptor(org.eclipse.jdt.internal.corext.fix.CleanUpPostSaveListener.POSTSAVELISTENER_ID);
                 // descriptor shouldn't be null, but if it is, NPE is thrown and we register the exception in the log.
                 // also exception will be thrown if the delegating cleanup was already installed
-                org.eclipse.jdt.internal.corext.fix.CleanUpPostSaveListener jdtCleanUp = (org.eclipse.jdt.internal.corext.fix.CleanUpPostSaveListener)
-                        descriptor.getPostSaveListener();
+                org.eclipse.jdt.internal.corext.fix.CleanUpPostSaveListener jdtCleanUp = (org.eclipse.jdt.internal.corext.fix.CleanUpPostSaveListener) descriptor.getPostSaveListener();
                 GroovyCleanupPostSaveListener groovyCleanUp = new GroovyCleanupPostSaveListener();
-                DelegatingCleanUpPostSaveListener delegatingCleanUp = new DelegatingCleanUpPostSaveListener(jdtCleanUp, groovyCleanUp);
+                IPostSaveListener delegatingCleanUp = new DelegatingCleanUpPostSaveListener(jdtCleanUp, groovyCleanUp);
                 ReflectionUtils.setPrivateField(SaveParticipantDescriptor.class, "fPostSaveListener", descriptor, delegatingCleanUp);
             }
         } catch (Exception e) {
@@ -88,8 +87,7 @@ public class DelegatingCleanUpPostSaveListener implements IPostSaveListener {
             // synchronized because we don't want registry being used in the middle of this.
             synchronized (registry) {
                 SaveParticipantDescriptor descriptor = registry.getSaveParticipantDescriptor(org.eclipse.jdt.internal.corext.fix.CleanUpPostSaveListener.POSTSAVELISTENER_ID);
-                DelegatingCleanUpPostSaveListener delegatingCleanUp = (DelegatingCleanUpPostSaveListener)
-                        descriptor.getPostSaveListener();
+                DelegatingCleanUpPostSaveListener delegatingCleanUp = (DelegatingCleanUpPostSaveListener) descriptor.getPostSaveListener();
                 ReflectionUtils.setPrivateField(SaveParticipantDescriptor.class, "fPostSaveListener", descriptor, delegatingCleanUp.jdtCleanUp);
             }
         } catch (Exception e) {
