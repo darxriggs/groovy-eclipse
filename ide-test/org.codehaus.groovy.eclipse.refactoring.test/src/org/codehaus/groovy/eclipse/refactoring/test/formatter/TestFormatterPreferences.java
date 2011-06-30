@@ -81,7 +81,7 @@ public class TestFormatterPreferences extends EclipseTestCase {
      */
     public void testBracesPrefs() throws Exception {
         FormatterPreferencesPage preferencesPage = new FormatterPreferencesPage();
-        IPreferenceStore groovyPrefs =preferencesPage.getPreferenceStore();
+        IPreferenceStore groovyPrefs = preferencesPage.getPreferenceStore();
         assertTrue("Using the wrong preferences store?", groovyPrefs.contains(BRACES_START));
         assertTrue("Using the wrong preferences store?", groovyPrefs.contains(BRACES_END));
 
@@ -100,7 +100,6 @@ public class TestFormatterPreferences extends EclipseTestCase {
         groovyPrefs.setValue(BRACES_END, "same");
         formatPrefs = new FormatterPreferences(gunit);
         assertTrue(formatPrefs.getBracesEnd() == FormatterPreferences.SAME_LINE);
-
     }
 
     /**
@@ -122,14 +121,14 @@ public class TestFormatterPreferences extends EclipseTestCase {
         projectPrefs.setValue(TAB_SIZE, 13);
         formatPrefs = new FormatterPreferences(gunit);
         assertEquals(13, formatPrefs.getTabSize());
-        
+
         projectPrefs.setValue(TAB_CHAR, JavaCore.TAB);
         projectPrefs.setValue(TAB_SIZE, 11);
         projectPrefs.setValue(INDENT_SIZE, 5);
         formatPrefs = new FormatterPreferences(gunit);
         assertEquals(11, formatPrefs.getIndentationSize());
         assertEquals(11, formatPrefs.getTabSize());
-        
+
         projectPrefs.setValue(TAB_CHAR, DefaultCodeFormatterConstants.MIXED);
         projectPrefs.setValue(TAB_SIZE, 11);
         projectPrefs.setValue(INDENT_SIZE, 5);
@@ -137,7 +136,7 @@ public class TestFormatterPreferences extends EclipseTestCase {
         assertEquals(5, formatPrefs.getIndentationSize());
         assertEquals(11, formatPrefs.getTabSize());
     }
-    
+
     /**
      * Indentation of empty lines preferences should be inherited from the Java project.
      */
@@ -153,7 +152,7 @@ public class TestFormatterPreferences extends EclipseTestCase {
         formatPrefs = new FormatterPreferences(gunit);
         assertFalse(formatPrefs.isIndentEmptyLines());
     }
-    
+
 
     /**
      * If not defined in the Java project explicitly indent empty lines prefs should be
@@ -164,7 +163,7 @@ public class TestFormatterPreferences extends EclipseTestCase {
         IFormatterPreferences formatPrefs = new FormatterPreferences(gunit);
         assertTrue(formatPrefs.isIndentEmptyLines());
     }
-    
+
     /**
      * If not defined in the Java project explicitly tab related preferences should
      * be inherited from JavaCore preferences.
