@@ -28,24 +28,20 @@ import org.eclipse.jface.preference.IPreferenceStore;
  */
 public class FormatterPreferenceInitializer extends AbstractPreferenceInitializer {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
-	 */
-	@Override
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
+     */
+    @Override
     public void initializeDefaultPreferences() {
-		IPreferenceStore store = GroovyPlugin.getDefault().getPreferenceStore();	
-		
-		// Formatter Prefs
-		store.setDefault(PreferenceConstants.GROOVY_FORMATTER_MULTILINE_INDENTATION, 2);
+        IPreferenceStore store = GroovyPlugin.getDefault().getPreferenceStore();
 
-		store.setDefault(PreferenceConstants.GROOVY_FORMATTER_BRACES_START, "same");
-		store.setDefault(PreferenceConstants.GROOVY_FORMATTER_BRACES_END, "next");
-		
-		store.setDefault(PreferenceConstants.GROOVY_FORMATTER_MAX_LINELENGTH, 80);
+        store.setDefault(PreferenceConstants.GROOVY_FORMATTER_MULTILINE_INDENTATION, 2);
 
-	}
+        store.setDefault(PreferenceConstants.GROOVY_FORMATTER_BRACES_START, "same");
+        store.setDefault(PreferenceConstants.GROOVY_FORMATTER_BRACES_END, "next");
 
-
+        store.setDefault(PreferenceConstants.GROOVY_FORMATTER_MAX_LINELENGTH, 80);
+    }
 }
