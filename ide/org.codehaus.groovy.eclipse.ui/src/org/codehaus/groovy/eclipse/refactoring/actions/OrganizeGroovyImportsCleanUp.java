@@ -45,15 +45,15 @@ import org.eclipse.text.edits.TextEdit;
  * @author Andrew Eisenberg
  * @created Aug 17, 2009
  */
-public class GroovyImportsCleanup extends AbstractCleanUp {
+public class OrganizeGroovyImportsCleanUp extends AbstractCleanUp {
 
     private RefactoringStatus fStatus;
 
-    public GroovyImportsCleanup(Map options) {
+    public OrganizeGroovyImportsCleanUp(Map options) {
         super(options);
     }
 
-    public GroovyImportsCleanup() {
+    public OrganizeGroovyImportsCleanUp() {
         super();
     }
 
