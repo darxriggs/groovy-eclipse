@@ -215,7 +215,7 @@ public class GroovyDocumentScanner implements IDocumentListener {
         int start;
         int end;
 
-        if (selection == null) {
+        if (selection == null || selection.getLength() == 0) {
             start = 0;
             end = document.getLength();
         } else {
@@ -230,7 +230,7 @@ public class GroovyDocumentScanner implements IDocumentListener {
      * Retrieve a list of tokens for a range of text in the document.
      * Any token who's starting position is in the range [start..end]
      * (end is exclusive) will be included in the list.
-     * 
+     *
      * @param start
      * @param end
      * @return

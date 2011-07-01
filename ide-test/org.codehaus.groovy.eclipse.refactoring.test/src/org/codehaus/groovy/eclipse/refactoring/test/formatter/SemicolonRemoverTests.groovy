@@ -97,8 +97,14 @@ class SemicolonRemoverTests extends TestCase {
     }
 
     void testSelection() {
-        def selection = new TextSelection(17, 6) // selecting { 2; }
-        assertSelectedContentChangedFromTo(selection, 'def a = [{ 1; }, { 2; }];', 'def a = [{ 1; }, { 2 }];')
+        def selection = null // selecting: nothing
+        assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1 }, { 2 }]')
+
+        selection = new TextSelection(5, 0) // selecting: nothing
+        assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1 }, { 2 }]')
+
+        selection = new TextSelection(13, 6) // selecting: { 2; }
+        assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1; }, { 2 }];')
     }
 
     private void assertContentUnchanged(String input) {
