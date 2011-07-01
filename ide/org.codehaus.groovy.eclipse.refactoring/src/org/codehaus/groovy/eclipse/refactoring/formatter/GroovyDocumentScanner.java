@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.ITextSelection;
 
 import antlr.Token;
 import antlr.TokenStreamException;
@@ -49,9 +50,8 @@ public class GroovyDocumentScanner implements IDocumentListener {
 
     /**
      * This is the document that we are chopping into tokens. This may not be
-     * null,
-     * except when the GroovyDocumentScanner has been disposed (in which case
-     * it should no longer be used.
+     * null, except when the GroovyDocumentScanner has been disposed (in which
+     * case it should no longer be used.
      */
     private IDocument document;
 
@@ -211,39 +211,57 @@ public class GroovyDocumentScanner implements IDocumentListener {
         return document;
     }
 
+    public List<Token> getTokens(ITextSelection selection) {
+        int start;
+        int end;
+
+        if (selection == null) {
+            start = 0;
+            end = document.getLength();
+        } else {
+            start = selection.getOffset();
+            end = start + selection.getLength();
+        }
+
+        return getTokens(start, end);
+    }
+
     /**
      * Retrieve a list of tokens for a range of text in the document.
-     * Any token who's starting position is in the range [start..end[
-     * range will be included in the list.
-     *
+     * Any token who's starting position is in the range [start..end]
+     * (end is exclusive) will be included in the list.
+     * 
      * @param start
      * @param end
      * @return
      */
     public List<Token> getTokens(int start, int end) {
-        if (start>=end)
+        if (start >= end)
             return new ArrayList<Token>();
+
         try {
-            int startToken = findTokenFrom(start);
-            if (startToken == NOT_FOUND)
+            int startTokenIndex = findTokenFrom(start);
+            if (startTokenIndex == NOT_FOUND)
                 return new ArrayList<Token>();
-            if (getOffset(tokens.get(startToken)) >= end)
+
+            if (getOffset(tokens.get(startTokenIndex)) >= end)
                 return new ArrayList<Token>();
-            int endToken = findTokenFrom(end);
-            if (endToken == NOT_FOUND) {
-                endToken = tokens.size() - 1;
+
+            int endTokenIndex = findTokenFrom(end);
+            if (endTokenIndex == NOT_FOUND) {
+                endTokenIndex = tokens.size() - 1;
                 // Take the last token in the file as end token:
                 // Since startToken is between start and end, and since there
                 // are no
                 // tokens after end, all tokens from startToken onward should be
                 // returned!
+            } else {
+                // Actually the token before is the one we want!
+                // The one we found is >= end.
+                endTokenIndex = endTokenIndex - 1;
             }
-            else {
-                endToken = endToken - 1; // Actually the token before is the one we want!
-                // The one we found is >= end
-            }
-            Assert.isTrue(startToken <= endToken);
-            return tokens.subList(startToken, endToken + 1);
+            Assert.isTrue(startTokenIndex <= endTokenIndex);
+            return tokens.subList(startTokenIndex, endTokenIndex + 1);
         } catch (BadLocationException e) {
             throw new Error(e);
         }
@@ -296,31 +314,30 @@ public class GroovyDocumentScanner implements IDocumentListener {
         Assert.isLegal(offset >= 0);
         ensureScanned(offset);
         try {
-            int beg = 0;
+            int start = 0;
             int end = tokens.size() - 1;
 
-            // The "candidates" are all indexes in range [beg..end]
+            // The "candidates" are all indexes in range [start..end]
             // We will binary search, until we either exhaust the range,
-            // or we find a beg that matches the condition.
-
-            while (beg <= end) {
-                if (getOffset(tokens.get(beg)) >= offset) {
-                    // beg token is good: done
-                    return beg;
+            // or find a start that matches the condition.
+            while (start <= end) {
+                if (getOffset(tokens.get(start)) >= offset) {
+                    // start token is good: done
+                    return start;
                 } else {
-                    // beg token was bad. No need to consider it anymore
-                    beg++;
-                    if (beg > end)
+                    // start token was bad. No need to consider it anymore
+                    start++;
+                    if (start > end)
                         return NOT_FOUND;
                 }
-                int mid = (beg + end) / 2;
+                int mid = (start + end) / 2;
                 int midOfs = getOffset(tokens.get(mid));
                 if (midOfs >= offset) {
                     // Mid token is already good (matches condition)
                     end = mid;
                 } else {
                     // Mid token is still bad (does not match condition)
-                    beg = mid + 1;
+                    start = mid + 1;
                 }
             }
             return NOT_FOUND;
@@ -337,12 +354,12 @@ public class GroovyDocumentScanner implements IDocumentListener {
      * @return A token, or null if no such token exists.
      */
     public Token getLastTokenBefore(int offset) {
-        int nextToken = findTokenFrom(offset);
-        if (nextToken == NOT_FOUND) {
+        int index = findTokenFrom(offset);
+        if (index == NOT_FOUND) {
             return getLastToken();
         }
-        if (nextToken > 0) {
-            return tokens.get(nextToken - 1);
+        if (index > 0) {
+            return tokens.get(index - 1);
         }
         return null;
     }
