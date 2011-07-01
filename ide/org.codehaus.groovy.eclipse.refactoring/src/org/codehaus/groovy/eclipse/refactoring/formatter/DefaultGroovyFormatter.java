@@ -134,7 +134,7 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
             }
 
             initCodebase();
-            GroovyIndentation indent = new GroovyIndentation(this, pref, indentationLevel );
+            GroovyIndentation indent = new GroovyIndentation(this, pref, indentationLevel);
             UndoEdit undo2 = indent.getIndentationEdits().apply(formattedDocument);
             formatLength += undo2.getLength();
 
