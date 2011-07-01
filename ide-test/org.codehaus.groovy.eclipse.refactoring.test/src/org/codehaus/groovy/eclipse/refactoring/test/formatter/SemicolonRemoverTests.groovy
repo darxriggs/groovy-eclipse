@@ -27,13 +27,20 @@ class SemicolonRemoverTests extends TestCase {
     }
 
     void testEmptyDocument() {
-        assertContentChangedFromTo('', '')
+        assertContentUnchanged('')
     }
 
     void testFullLineComment() {
-        assertContentChangedFromTo('// def a',      '// def a')
-        assertContentChangedFromTo('/* def a; */',  '/* def a; */')
-        assertContentChangedFromTo('/* def a;\n*/', '/* def a;\n*/')
+        assertContentUnchanged('// def a')
+        assertContentUnchanged('/* def a; */')
+        assertContentUnchanged('/* def a;\n*/')
+    }
+
+    void testNothingToRemove() {
+        assertContentUnchanged('def a = 10')
+        assertContentUnchanged('def a = {}')
+        assertContentUnchanged('def a = []')
+        assertContentUnchanged('for (int i = 0; i < 5; i++) {}')
     }
 
     void testSimpleComment() {
@@ -72,15 +79,23 @@ class SemicolonRemoverTests extends TestCase {
         assertContentChangedFromTo('def a = [];', 'def a = []')
     }
 
-    void testNothingToRemove() {
-        assertContentChangedFromTo('def a = 10', 'def a = 10')
-        assertContentChangedFromTo('def a = {}', 'def a = {}')
-        assertContentChangedFromTo('def a = []', 'def a = []')
-    }
-
     void testTrailingSpacesAndTabs() {
         assertContentChangedFromTo('def a = 1 ; ',   'def a = 1  ')
         assertContentChangedFromTo('def a = 1\t;\t', 'def a = 1\t\t')
+    }
+
+    void testCurlyBraces() {
+        assertContentChangedFromTo('def a = { 1; }',           'def a = { 1 }')
+        assertContentChangedFromTo('def a = [{ 1; }, { 2; }]', 'def a = [{ 1 }, { 2 }]')
+        assertContentChangedFromTo('class A { def a = 1; }',   'class A { def a = 1 }')
+    }
+
+    void testMultipleLines() {
+        assertContentChangedFromTo('def a = 1\ndef b = 2;', 'def a = 1\ndef b = 2')
+    }
+
+    private void assertContentUnchanged(String input) {
+        assertContentChangedFromTo(input, input)
     }
 
     private void assertContentChangedFromTo(String input, String expectedOutput) {

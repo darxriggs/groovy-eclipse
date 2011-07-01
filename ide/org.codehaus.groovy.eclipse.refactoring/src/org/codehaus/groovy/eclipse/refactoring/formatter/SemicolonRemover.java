@@ -44,8 +44,20 @@ public class SemicolonRemover extends GroovyFormatter {
         TextEdit textEdit = new MultiTextEdit();
 
         for (int line = 0; line < document.getNumberOfLines(); line++) {
-            Token lastToken = getLastTokenInLine(line);
+            List<Token> tokens = scanner.getLineTokens(line);
 
+            for (int i = 0; i < tokens.size() - 1; i++) {
+                Token token = tokens.get(i);
+                Token nextToken = tokens.get(i + 1);
+
+                if (isUnnecessarySemicolon(token, nextToken)) {
+                    int semicolonOffset = scanner.getOffset(token);
+                    TextEdit deleteSemicolon = new DeleteEdit(semicolonOffset, 1);
+                    textEdit.addChild(deleteSemicolon);
+                }
+            }
+
+            Token lastToken = getLastTokenInLine(line);
             if (isUnnecessarySemicolon(lastToken)) {
                 int semicolonOffset = scanner.getOffset(lastToken);
                 TextEdit deleteSemicolon = new DeleteEdit(semicolonOffset, 1);
@@ -63,12 +75,21 @@ public class SemicolonRemover extends GroovyFormatter {
             return null;
         }
 
-        // It's not required to handle trailing comments at the EOL
-        // as they are already stripped by Antlr or the scanner.
+        // It's not required to handle comments, spaces and tabs.
+        // They are stripped by Antlr or the scanner.
         return tokens.get(tokens.size() - 1);
     }
 
     private boolean isUnnecessarySemicolon(Token token) {
         return token != null && token.getType() == GroovyTokenTypeBridge.SEMI;
+    }
+
+    private boolean isUnnecessarySemicolon(Token token, Token nextToken) {
+        boolean isSemicolonToken = token != null && token.getType() == GroovyTokenTypeBridge.SEMI;
+        boolean isTrailingNextToken = nextToken != null && (nextToken.getType() == GroovyTokenTypeBridge.RCURLY ||
+                                                            nextToken.getType() == GroovyTokenTypeBridge.NLS ||
+                                                            nextToken.getType() == GroovyTokenTypeBridge.EOF);
+
+        return isSemicolonToken && isTrailingNextToken;
     }
 }
