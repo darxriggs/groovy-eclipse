@@ -19,6 +19,8 @@ import junit.framework.TestCase
 
 import org.codehaus.groovy.eclipse.refactoring.formatter.SemicolonRemover
 import org.eclipse.jface.text.Document
+import org.eclipse.jface.text.ITextSelection
+import org.eclipse.jface.text.TextSelection
 
 class SemicolonRemoverTests extends TestCase {
 
@@ -94,13 +96,22 @@ class SemicolonRemoverTests extends TestCase {
         assertContentChangedFromTo('def a = 1\ndef b = 2;', 'def a = 1\ndef b = 2')
     }
 
+    void testSelection() {
+        def selection = new TextSelection(17, 6) // selecting { 2; }
+        assertSelectedContentChangedFromTo(selection, 'def a = [{ 1; }, { 2; }];', 'def a = [{ 1; }, { 2 }];')
+    }
+
     private void assertContentUnchanged(String input) {
         assertContentChangedFromTo(input, input)
     }
 
     private void assertContentChangedFromTo(String input, String expectedOutput) {
+        assertSelectedContentChangedFromTo(null, input, expectedOutput)
+    }
+
+    private void assertSelectedContentChangedFromTo(ITextSelection selection, String input, String expectedOutput) {
         def document = new Document(input)
-        def formatter = new SemicolonRemover(null, document)
+        def formatter = new SemicolonRemover(selection, document)
 
         def semicolonRemoval = formatter.format()
         semicolonRemoval.apply(document)

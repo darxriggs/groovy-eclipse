@@ -18,6 +18,7 @@ package org.codehaus.groovy.eclipse.refactoring.formatter;
 import java.util.List;
 
 import org.codehaus.greclipse.GroovyTokenTypeBridge;
+import org.codehaus.groovy.eclipse.core.util.ListUtil;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -43,53 +44,34 @@ public class SemicolonRemover extends GroovyFormatter {
     public TextEdit format() throws BadLocationException {
         TextEdit textEdit = new MultiTextEdit();
 
-        for (int line = 0; line < document.getNumberOfLines(); line++) {
-            List<Token> tokens = scanner.getLineTokens(line);
+        List<Token> tokens = scanner.getTokens(selection);
+        for (int i = 0; i < tokens.size() - 1; i++) {
+            Token token = tokens.get(i);
+            Token nextToken = tokens.get(i + 1);
 
-            for (int i = 0; i < tokens.size() - 1; i++) {
-                Token token = tokens.get(i);
-                Token nextToken = tokens.get(i + 1);
-
-                if (isUnnecessarySemicolon(token, nextToken)) {
-                    int semicolonOffset = scanner.getOffset(token);
-                    TextEdit deleteSemicolon = new DeleteEdit(semicolonOffset, 1);
-                    textEdit.addChild(deleteSemicolon);
-                }
-            }
-
-            Token lastToken = getLastTokenInLine(line);
-            if (isUnnecessarySemicolon(lastToken)) {
-                int semicolonOffset = scanner.getOffset(lastToken);
-                TextEdit deleteSemicolon = new DeleteEdit(semicolonOffset, 1);
-                textEdit.addChild(deleteSemicolon);
-            }
+            if (isSemicolon(token) && isDelimiter(nextToken))
+                addSemicolonRemoval(textEdit, token);
         }
+
+        Token lastToken = tokens.isEmpty() ? null : tokens.get(tokens.size() - 1);
+        if (isSemicolon(lastToken))
+            addSemicolonRemoval(textEdit, lastToken);
 
         return textEdit;
     }
 
-    private Token getLastTokenInLine(int line) throws BadLocationException {
-        List<Token> tokens = scanner.getLineTokens(line);
-
-        if (tokens == null || tokens.isEmpty()) {
-            return null;
-        }
-
-        // It's not required to handle comments, spaces and tabs.
-        // They are stripped by Antlr or the scanner.
-        return tokens.get(tokens.size() - 1);
-    }
-
-    private boolean isUnnecessarySemicolon(Token token) {
+    private boolean isSemicolon(Token token) {
         return token != null && token.getType() == GroovyTokenTypeBridge.SEMI;
     }
 
-    private boolean isUnnecessarySemicolon(Token token, Token nextToken) {
-        boolean isSemicolonToken = token != null && token.getType() == GroovyTokenTypeBridge.SEMI;
-        boolean isTrailingNextToken = nextToken != null && (nextToken.getType() == GroovyTokenTypeBridge.RCURLY ||
-                                                            nextToken.getType() == GroovyTokenTypeBridge.NLS ||
-                                                            nextToken.getType() == GroovyTokenTypeBridge.EOF);
+    private boolean isDelimiter(Token token) {
+        List<Integer> delimiterTypes = ListUtil.list(GroovyTokenTypeBridge.RCURLY, GroovyTokenTypeBridge.NLS, GroovyTokenTypeBridge.EOF);
+        return token != null && delimiterTypes.contains(token.getType());
+    }
 
-        return isSemicolonToken && isTrailingNextToken;
+    private void addSemicolonRemoval(TextEdit textEdit, Token semicolon) throws BadLocationException {
+        int semicolonOffset = scanner.getOffset(semicolon);
+        TextEdit deleteSemicolon = new DeleteEdit(semicolonOffset, 1);
+        textEdit.addChild(deleteSemicolon);
     }
 }
