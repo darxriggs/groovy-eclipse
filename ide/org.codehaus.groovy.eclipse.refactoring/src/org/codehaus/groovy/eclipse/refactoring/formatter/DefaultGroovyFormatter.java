@@ -39,6 +39,7 @@ import org.codehaus.groovy.eclipse.refactoring.core.utils.astScanner.predicates.
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.text.edits.MultiTextEdit;
@@ -59,7 +60,7 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
     private ModuleNode rootNode;
 
     private Document formattedDocument;
-    private final boolean indentendOnly;
+    private final boolean indentOnly;
     public int formatOffset, formatLength;
 
     private KlenkDocumentScanner tokens;
@@ -71,31 +72,32 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
      * @param sel The current selection of the Editor
      * @param doc The Document which should be formatted
      * @param map default Plugin preferences, or selfmade preferences
-     * @param indentendOnly if true, the code will only be indentended not
-     *            formatted
+     * @param indentOnly if true, the code will only be indented but not formatted
      */
-    public DefaultGroovyFormatter(ITextSelection sel, IDocument doc, IFormatterPreferences prefs, boolean indentendOnly) {
+    public DefaultGroovyFormatter(ITextSelection sel, IDocument doc, IFormatterPreferences pref, boolean indentOnly) {
         super(sel, doc);
-        this.indentendOnly = indentendOnly;
-        pref = prefs;
+        this.indentOnly = indentOnly;
+        this.pref = pref;
+
         if (selection.getLength() != 0) {
             try {
                 // expand selection to include start of line
-                int startLine = doc.getLineOfOffset(selection.getOffset());
-                formatOffset = doc.getLineInformation(startLine).getOffset();
+                int startLine = document.getLineOfOffset(selection.getOffset());
+                IRegion startLineInfo = document.getLineInformation(startLine);
 
                 // -1 because we don't want a selection at the start of a new
                 // line to cause that line to be formatted
-                int endLine = doc.getLineOfOffset(selection.getOffset() + selection.getLength() - 1);
-                int end = doc.getLineInformation(endLine).getOffset() + doc.getLineInformation(endLine).getLength();
-                formatLength = end - selection.getOffset();
+                int endLine = document.getLineOfOffset(selection.getOffset() + selection.getLength() - 1);
+                IRegion endLineInfo = document.getLineInformation(endLine);
+
+                formatOffset = startLineInfo.getOffset();
+                formatLength = endLineInfo.getOffset() + endLineInfo.getLength() - formatOffset;
             } catch (BadLocationException e) {
                 GroovyCore.logException("Exception when calculating offsets for formatting", e);
                 // well, do the best we can
                 formatOffset = selection.getOffset();
                 formatLength = selection.getLength();
             }
-
         } else {
             formatOffset = 0;
             formatLength = document.getLength();
@@ -116,14 +118,13 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
             // caused by unparseable file
             throw new Exception("Problem parsing Compilation unit.  Fix all syntax errors and try again.");
         }
-
     }
 
     @Override
     public TextEdit format() {
         formattedDocument = new Document(document.get());
         try {
-            if (!indentendOnly) {
+            if (!indentOnly) {
                 initCodebase();
                 GroovyBeautifier beautifier = new GroovyBeautifier(this, pref);
                 int lengthBefore = formattedDocument.getLength();
@@ -143,20 +144,21 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
 //              UndoEdit undo3 = linewrap.getLineWrapEdits().apply(formattedDocument);
 //              formatLength += undo3.getLength();
 //          }
-
         } catch (Exception e) {
             // swallow exception. Caused by unparseable code
             e.printStackTrace();
         }
-        if (!formattedDocument.get().equals(document.get()))
-            return new ReplaceEdit(0, document.getLength(), formattedDocument
-                    .get());
-        return new MultiTextEdit();
+
+        if (formattedDocument.get().equals(document.get())) {
+            return new MultiTextEdit();
+        }
+
+        return new ReplaceEdit(0, document.getLength(), formattedDocument.get());
     }
 
     /**
      * Searches in the corresponding AST if the given Token is a multiline
-     * statement. Trailling linefeeds and spaces will be ignored.
+     * statement. Trailing linefeeds and spaces will be ignored.
      *
      * @param t
      *            Token to search for
@@ -179,8 +181,7 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
                         closureTest, t.getLine());
                 node.visit(cltest);
                 if (!cltest.getContainer()) {
-                    String text = ASTTools.getTextofNode(node,
-                            formattedDocument);
+                    String text = ASTTools.getTextofNode(node, formattedDocument);
                     Matcher m = Pattern.compile(".*(\n|\r\n|\r).*",
                             Pattern.DOTALL).matcher(trimEnd(text));
                     return m.matches();
@@ -241,16 +242,14 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
      *         length
      */
     public ASTNode findCorrespondingNode(Token t) {
-        ASTScanner scanner = new ASTScanner(rootNode, new SourceCodePredicate(t
-                .getLine(), t.getColumn()), formattedDocument);
+        ASTScanner scanner = new ASTScanner(rootNode,
+                                            new SourceCodePredicate(t.getLine(), t.getColumn()),
+                                            formattedDocument);
         scanner.startASTscan();
         Entry<ASTNode, ASTNodeInfo> found = null;
         if (scanner.hasMatches()) {
-            for (Entry<ASTNode, ASTNodeInfo> e : scanner.getMatchedNodes()
-                    .entrySet()) {
-                if (found == null
-                        || (found.getValue().getLength() < e.getValue()
-                                .getLength()))
+            for (Entry<ASTNode, ASTNodeInfo> e : scanner.getMatchedNodes().entrySet()) {
+                if (found == null || (found.getValue().getLength() < e.getValue().getLength()))
                     found = e;
             }
         }
@@ -269,23 +268,26 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
     public Token getTokenAfterParenthesis(int index) {
         int i = index;
         int countParenthesis = 1;
+
         while (tokens.get(i).getType() != GroovyTokenTypeBridge.LPAREN) {
             i++;
         }
         i++;
+
         while (countParenthesis > 0 && i < tokens.size()-1) {
             int ttype = tokens.get(i).getType();
             if (ttype == GroovyTokenTypeBridge.LPAREN) {
-                    countParenthesis++;
+                countParenthesis++;
             } else if (ttype == GroovyTokenTypeBridge.RPAREN) {
-                    countParenthesis--;
+                countParenthesis--;
             }
             i++;
         }
-        if (tokens.get(i).getType() == GroovyTokenTypeBridge.LCURLY ||
-                i >= tokens.size()) {
+
+        if (tokens.get(i).getType() == GroovyTokenTypeBridge.LCURLY || i >= tokens.size()) {
             return null;
         }
+
         return getNextToken(i);
     }
 
@@ -355,8 +357,7 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
         int type;
         do {
             type = tokens.get(--currentPos).getType();
-        } while ((type == GroovyTokenTypeBridge.NLS && !includingNLS)
-                && currentPos >= 0);
+        } while ((type == GroovyTokenTypeBridge.NLS && !includingNLS) && currentPos >= 0);
         return currentPos;
     }
 
@@ -375,8 +376,7 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
      * @throws BadLocationException
      */
     public int getOffsetOfToken(Token token) throws BadLocationException {
-        return formattedDocument.getLineOffset(token.getLine() - 1)
-                + token.getColumn() - 1;
+        return formattedDocument.getLineOffset(token.getLine() - 1) + token.getColumn() - 1;
     }
 
     /**
@@ -388,8 +388,7 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
     public int getOffsetOfTokenEnd(Token token) throws BadLocationException {
         int offsetToken = getOffsetOfToken(token);
         int offsetNextToken = getOffsetOfToken(getNextTokenIncludingNLS(getPosOfToken(token)));
-        String tokenWithGap = formattedDocument.get(offsetToken,
-                offsetNextToken - offsetToken);
+        String tokenWithGap = formattedDocument.get(offsetToken, offsetNextToken - offsetToken);
         return offsetToken + trimEnd(tokenWithGap).length();
     }
 
@@ -412,22 +411,21 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
     }
 
     public int getPosOfToken(int tokenType, int line, int column, String tokenText) {
-        for(int p = 0; p < tokens.size(); p++) {
+        for (int p = 0; p < tokens.size(); p++) {
             Token a = tokens.get(p);
-            if(a.getType() == tokenType &&
-                    a.getColumn() == column &&
-                    a.getLine() == line &&
-                    a.getText().equals(tokenText))
+            if (a.getType() == tokenType &&
+                a.getColumn() == column &&
+                a.getLine() == line &&
+                a.getText().equals(tokenText))
                 return p;
         }
         return -1;
     }
 
     public int getPosOfToken(int lineNumber, int columnNumber) {
-        for(int p = 0; p < tokens.size(); p++) {
+        for (int p = 0; p < tokens.size(); p++) {
             Token a = tokens.get(p);
-            if(a.getColumn() == columnNumber &&
-                    a.getLine() == lineNumber)
+            if (a.getColumn() == columnNumber && a.getLine() == lineNumber)
                 return p;
         }
         return -1;
