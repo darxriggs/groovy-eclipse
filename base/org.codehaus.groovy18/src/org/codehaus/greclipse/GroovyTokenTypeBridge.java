@@ -44,6 +44,7 @@ public class GroovyTokenTypeBridge {
     public static int STRING_CTOR_START = GroovyTokenTypes.STRING_CTOR_START;
     public static int WS                = GroovyTokenTypes.WS;
     public static int COMMA             = GroovyTokenTypes.COMMA;
+    public static int SEMI              = GroovyTokenTypes.SEMI;
     public static int RCURLY            = GroovyTokenTypes.RCURLY;
     public static int SL_COMMENT        = GroovyTokenTypes.SL_COMMENT;
     public static int CLOSABLE_BLOCK_OP = GroovyTokenTypes.CLOSABLE_BLOCK_OP;
