@@ -93,7 +93,7 @@ class SemicolonRemoverTests extends TestCase {
     }
 
     void testMultipleLines() {
-        assertContentChangedFromTo('def a = 1\ndef b = 2;', 'def a = 1\ndef b = 2')
+        assertContentChangedFromTo('def a = 1;\ndef b = 2;', 'def a = 1\ndef b = 2')
     }
 
     void testSelection() {
@@ -103,8 +103,14 @@ class SemicolonRemoverTests extends TestCase {
         selection = new TextSelection(5, 0) // selecting: nothing
         assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1 }, { 2 }]')
 
+        selection = new TextSelection(0, 21) // selecting: everything
+        assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1 }, { 2 }]')
+
         selection = new TextSelection(13, 6) // selecting: { 2; }
         assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1; }, { 2 }];')
+
+        selection = new TextSelection(0, 6) // selecting: a = 1;
+        assertSelectedContentChangedFromTo(selection, 'a = 1; b = 2;', 'a = 1; b = 2;')
     }
 
     private void assertContentUnchanged(String input) {
