@@ -45,8 +45,7 @@ public class SemicolonRemover extends GroovyFormatter {
         TextEdit textEdit = new MultiTextEdit();
 
         List<Token> tokens = scanner.getTokens(selection);
-        for (int i = 0; i < tokens.size(); i++) {
-            Token token = tokens.get(i);
+        for (Token token : tokens) {
             Token nextToken = scanner.getNextToken(token);
 
             if (isSemicolon(token) && (nextToken == null || isDelimiter(nextToken)))
@@ -65,8 +64,8 @@ public class SemicolonRemover extends GroovyFormatter {
         return token != null && delimiterTypes.contains(token.getType());
     }
 
-    private void addSemicolonRemoval(TextEdit textEdit, Token semicolon) throws BadLocationException {
-        int semicolonOffset = scanner.getOffset(semicolon);
+    private void addSemicolonRemoval(TextEdit textEdit, Token semicolonToken) throws BadLocationException {
+        int semicolonOffset = scanner.getOffset(semicolonToken);
         TextEdit deleteSemicolon = new DeleteEdit(semicolonOffset, 1);
         textEdit.addChild(deleteSemicolon);
     }
