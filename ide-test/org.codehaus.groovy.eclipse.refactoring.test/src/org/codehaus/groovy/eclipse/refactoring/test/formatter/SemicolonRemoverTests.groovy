@@ -32,17 +32,17 @@ class SemicolonRemoverTests extends TestCase {
         assertContentUnchanged('')
     }
 
-    void testFullLineComment() {
-        assertContentUnchanged('// def a')
-        assertContentUnchanged('/* def a; */')
-        assertContentUnchanged('/* def a;\n*/')
-    }
-
     void testNothingToRemove() {
         assertContentUnchanged('def a = 10')
         assertContentUnchanged('def a = {}')
         assertContentUnchanged('def a = []')
         assertContentUnchanged('for (int i = 0; i < 5; i++) {}')
+    }
+
+    void testFullLineComment() {
+        assertContentUnchanged('// def a')
+        assertContentUnchanged('/* def a; */')
+        assertContentUnchanged('/* def a;\n*/')
     }
 
     void testSimpleComment() {
@@ -64,7 +64,7 @@ class SemicolonRemoverTests extends TestCase {
         assertContentChangedFromTo('def a; /* comment 1; */ /* comment 2;\n*/', 'def a /* comment 1; */ /* comment 2;\n*/')
     }
 
-    void testMultipleComments() {
+    void testMultipleInlinedComments() {
         assertContentChangedFromTo('a = 1; /* comment 1; */ b = 2; // comment 2;',     'a = 1; /* comment 1; */ b = 2 // comment 2;')
         assertContentChangedFromTo('a = 1; /* comment 1; */ b = 2; /* comment 2; */',  'a = 1; /* comment 1; */ b = 2 /* comment 2; */')
         assertContentChangedFromTo('a = 1; /* comment 1; */ b = 2; /* comment 2;\n*/', 'a = 1; /* comment 1; */ b = 2 /* comment 2;\n*/')
