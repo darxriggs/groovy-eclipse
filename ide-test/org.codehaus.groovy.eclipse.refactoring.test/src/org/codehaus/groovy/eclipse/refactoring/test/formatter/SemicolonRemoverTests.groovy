@@ -96,20 +96,25 @@ class SemicolonRemoverTests extends TestCase {
         assertContentChangedFromTo('def a = 1;\ndef b = 2;', 'def a = 1\ndef b = 2')
     }
 
-    void testSelection() {
-        def selection = null // selecting: nothing
-        assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1 }, { 2 }]')
+    void 'test selection - if nothing is selected, the whole document should be formatted'() {
+        assertSelectedContentChangedFromTo(null, 'a = [{ 1; }, { 2; }];', 'a = [{ 1 }, { 2 }]')
 
-        selection = new TextSelection(5, 0) // selecting: nothing
+        def selection = new TextSelection(5, 0) // selecting: nothing
         assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1 }, { 2 }]')
+    }
 
-        selection = new TextSelection(0, 21) // selecting: everything
+    void 'test selection - if everything is selected, the whole document should be formatted'() {
+        def selection = new TextSelection(0, 21) // selecting: everything
         assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1 }, { 2 }]')
+    }
 
-        selection = new TextSelection(13, 6) // selecting: { 2; }
+    void 'test selection - if a region with an unnecessary semicolon is selected, this should be removed'() {
+        def selection = new TextSelection(13, 6) // selecting: { 2; }
         assertSelectedContentChangedFromTo(selection, 'a = [{ 1; }, { 2; }];', 'a = [{ 1; }, { 2 }];')
+    }
 
-        selection = new TextSelection(0, 6) // selecting: a = 1;
+    void 'test selection - if a region with a semicolon that is required is selected, this should not be removed'() {
+        def selection = new TextSelection(0, 6) // selecting: a = 1;
         assertSelectedContentChangedFromTo(selection, 'a = 1; b = 2;', 'a = 1; b = 2;')
     }
 
