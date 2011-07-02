@@ -44,27 +44,12 @@ public class SemicolonRemover extends GroovyFormatter {
     public TextEdit format() throws BadLocationException {
         TextEdit textEdit = new MultiTextEdit();
 
-        // check pairs of tokens and remove the semicolon
-        // if it's unnecessary
         List<Token> tokens = scanner.getTokens(selection);
-        for (int i = 0; i < tokens.size() - 1; i++) {
+        for (int i = 0; i < tokens.size(); i++) {
             Token token = tokens.get(i);
-            Token nextToken = tokens.get(i + 1);
+            Token nextToken = scanner.getNextToken(token);
 
-            if (isSemicolon(token) && isDelimiter(nextToken))
-                addSemicolonRemoval(textEdit, token);
-        }
-
-        // the last token of a selection requires special handling
-        // because a selection can limit the required scope to
-        // determine if a semicolon is unnecessary
-        if (!tokens.isEmpty()) {
-            Token token = tokens.get(tokens.size() - 1);
-            int tokenEnd = scanner.getEnd(token);
-            List<Token> tokensAfterToken = scanner.getLineTokensFrom(tokenEnd);
-            Token nextToken = tokensAfterToken.isEmpty() ? null : tokensAfterToken.get(tokensAfterToken.size() - 1);
-
-            if (isSemicolon(token) && isDelimiter(nextToken))
+            if (isSemicolon(token) && (nextToken == null || isDelimiter(nextToken)))
                 addSemicolonRemoval(textEdit, token);
         }
 
@@ -77,7 +62,7 @@ public class SemicolonRemover extends GroovyFormatter {
 
     private boolean isDelimiter(Token token) {
         List<Integer> delimiterTypes = ListUtil.list(GroovyTokenTypeBridge.RCURLY, GroovyTokenTypeBridge.NLS, GroovyTokenTypeBridge.EOF);
-        return token == null || (token != null && delimiterTypes.contains(token.getType()));
+        return token != null && delimiterTypes.contains(token.getType());
     }
 
     private void addSemicolonRemoval(TextEdit textEdit, Token semicolon) throws BadLocationException {
