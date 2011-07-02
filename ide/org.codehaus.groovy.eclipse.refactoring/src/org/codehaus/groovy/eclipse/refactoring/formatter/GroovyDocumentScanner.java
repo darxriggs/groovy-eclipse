@@ -63,12 +63,15 @@ public class GroovyDocumentScanner implements IDocumentListener {
 
     private GroovyScanner tokenScanner;
 
-    private static int logLimit = 4; // At most this number scanner errors will
-                                     // be reported
+    /** At most this number of scanner errors will be reported */
+    private static int logLimit = 4;
 
-    public GroovyDocumentScanner(IDocument d) {
-        this.document = d;
-        document.addDocumentListener(this);
+    /** Used as index for tokens that could not be found */
+    private static final int NOT_FOUND = -1;
+
+    public GroovyDocumentScanner(IDocument document) {
+        this.document = document;
+        this.document.addDocumentListener(this);
         reset();
     }
 
@@ -90,8 +93,7 @@ public class GroovyDocumentScanner implements IDocumentListener {
      */
     protected void ensureScanned(int end) {
         if (tokens == null) {
-            // We haven't started scanning yet. Initialise the scanner and token
-            // list.
+            // We haven't started scanning yet. Initialise the scanner and token list.
             tokenScanner = new GroovyScanner(document.get());
             tokens = getTokensIncludingEOF();
         }
@@ -99,12 +101,12 @@ public class GroovyDocumentScanner implements IDocumentListener {
 
     private List<Token> getTokensIncludingEOF() {
         List<Token> result = new ArrayList<Token>();
-        Token t;
+        Token token;
         try {
             do {
-                t = nextToken();
-                result.add(t);
-            } while (t.getType() != GroovyTokenTypeBridge.EOF);
+                token = nextToken();
+                result.add(token);
+            } while (token.getType() != GroovyTokenTypeBridge.EOF);
         } catch (Exception e) {
             if (logLimit-- > 0) {
                 Util.log(e);
@@ -114,17 +116,16 @@ public class GroovyDocumentScanner implements IDocumentListener {
     }
 
     private Token nextToken() throws TokenStreamException, BadLocationException {
-        Token t;
+        Token token;
         try {
-            t = tokenScanner.nextToken();
+            token = tokenScanner.nextToken();
         } catch (TokenStreamException e) {
-            //Try to recover
+            // Try to recover
             tokenScanner.recover(document);
-            // No try catch:
-            // If it fails again we give up:
-            t = tokenScanner.nextToken();
+            // If it fails again we give up.
+            token = tokenScanner.nextToken();
         }
-        return t;
+        return token;
     }
 
     /**
@@ -136,8 +137,7 @@ public class GroovyDocumentScanner implements IDocumentListener {
     }
 
     /**
-     * Translate Antlr line/column positions of a token into Eclipse document
-     * offset.
+     * Translate Antlr line/column positions of a token into Eclipse document offset.
      *
      * @param token
      * @return offset of the start of the token in the document.
@@ -155,16 +155,15 @@ public class GroovyDocumentScanner implements IDocumentListener {
             } else {
                 int col = token.getColumn() - 1;
                 int line = token.getLine() - 1;
+
                 Assert.isTrue(col >= 0);
                 Assert.isTrue(col < document.getLineLength(line), "Token: " + token);
                 Assert.isTrue(offset < document.getLength());
+
                 if (token.getType() == GroovyTokenTypeBridge.IDENT) {
-                    // Don't check this for other tokens, because the Antlr
-                    // token's
-                    // "getText()" method doesn't always return the actual text
-                    // from the document (e.g. it returns "<newline>" for
-                    // newline
-                    // tokens.).
+                    // Don't check this for other tokens, because the Antlr token's
+                    // "getText()" method doesn't always return the actual text from
+                    // the document (e.g. it returns "<newline>" for newline tokens).
                     String antlrText = token.getText();
                     String eclipseText = document.get(offset, antlrText.length());
                     Assert.isTrue(eclipseText.equals(antlrText));
@@ -181,7 +180,7 @@ public class GroovyDocumentScanner implements IDocumentListener {
      * @throws BadLocationException
      */
     public int getEnd(Token token) throws BadLocationException {
-        GroovySourceToken gToken = ((GroovySourceToken) token);
+        GroovySourceToken gToken = (GroovySourceToken) token;
         return GroovyScanner.getOffset(document, gToken.getLineLast(), gToken.getColumnLast());
     }
 
@@ -211,6 +210,7 @@ public class GroovyDocumentScanner implements IDocumentListener {
         return document;
     }
 
+    // TODO: add support for IBlockTextSelection
     public List<Token> getTokens(ITextSelection selection) {
         int start;
         int end;
@@ -302,8 +302,6 @@ public class GroovyDocumentScanner implements IDocumentListener {
             return new ArrayList<Token>();
         }
     }
-
-    private static final int NOT_FOUND = -1;
 
     /**
      * Find the index of the first token that has an offset
@@ -413,13 +411,8 @@ public class GroovyDocumentScanner implements IDocumentListener {
         return result;
     }
 
-    /**
-     * @param result
-     * @return
-     */
     private boolean isWhitespace(Token result) {
         int type = result.getType();
         return type == GroovyTokenTypeBridge.WS || type == GroovyTokenTypeBridge.NLS;
     }
-
 }
