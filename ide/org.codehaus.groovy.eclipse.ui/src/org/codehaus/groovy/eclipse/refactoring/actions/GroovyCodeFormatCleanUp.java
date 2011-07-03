@@ -22,11 +22,11 @@ import org.eclipse.text.edits.TextEdit;
 /**
  * @author Andrew Eisenberg
  * @created Aug 18, 2009
- *
  */
 public class GroovyCodeFormatCleanUp extends AbstractCleanUp {
 
     private final FormatKind kind;
+
     public GroovyCodeFormatCleanUp(FormatKind kind) {
         this.kind = kind;
     }
@@ -78,7 +78,7 @@ public class GroovyCodeFormatCleanUp extends AbstractCleanUp {
     public String[] getStepDescriptions() {
         return new String[] { "Format groovy source code." };
     }
+
     @Override
     public void setOptions(CleanUpOptions options) { }
-
 }

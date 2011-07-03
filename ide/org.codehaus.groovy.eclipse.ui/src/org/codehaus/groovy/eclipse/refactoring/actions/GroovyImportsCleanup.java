@@ -44,7 +44,6 @@ import org.eclipse.text.edits.TextEdit;
 /**
  * @author Andrew Eisenberg
  * @created Aug 17, 2009
- *
  */
 public class GroovyImportsCleanup extends AbstractCleanUp {
 
@@ -65,7 +64,6 @@ public class GroovyImportsCleanup extends AbstractCleanUp {
     public CleanUpRequirements getRequirements() {
         return new CleanUpRequirements(false, false, false, null);
     }
-
 
     /**
      * {@inheritDoc}

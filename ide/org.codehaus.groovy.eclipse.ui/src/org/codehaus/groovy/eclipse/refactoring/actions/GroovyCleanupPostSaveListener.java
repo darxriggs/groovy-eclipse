@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright 2003-2009 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,24 +34,21 @@ import org.eclipse.jdt.ui.cleanup.ICleanUp;
  *
  * @author Andrew Eisenberg
  * @created Aug 17, 2009
- *
  */
 public class GroovyCleanupPostSaveListener extends CleanUpPostSaveListener implements IPostSaveListener {
 
-    /**
-     * We only support organize imports for now.
-     */
     @Override
     protected ICleanUp[] getCleanUps(Map settings, Set ids) {
-        ICleanUp[] result= JavaPlugin.getDefault().getCleanUpRegistry().createCleanUps(ids);
+        ICleanUp[] cleanups = JavaPlugin.getDefault().getCleanUpRegistry().createCleanUps(ids);
         CleanUpOptions options = new MapCleanUpOptions(settings);
         boolean doImports = false;
         boolean doFormat = false;
         boolean doIndent = false;
-        for (int i= 0; i < result.length; i++) {
-            if (result[i] instanceof ImportsCleanUp && options.isEnabled(CleanUpConstants.ORGANIZE_IMPORTS)) {
+
+        for (ICleanUp cleanup : cleanups) {
+            if (cleanup instanceof ImportsCleanUp && options.isEnabled(CleanUpConstants.ORGANIZE_IMPORTS)) {
                 doImports = true;
-            } else if (result[i] instanceof CodeFormatCleanUp) {
+            } else if (cleanup instanceof CodeFormatCleanUp) {
                 if (options.isEnabled(CleanUpConstants.FORMAT_SOURCE_CODE)
                         || options.isEnabled(CleanUpConstants.FORMAT_SOURCE_CODE_CHANGES_ONLY)) {
                     doFormat = true;
@@ -61,6 +58,7 @@ public class GroovyCleanupPostSaveListener extends CleanUpPostSaveListener imple
                 }
             }
         }
+
         if (doImports && doFormat) {
             return new ICleanUp[] { new GroovyImportsCleanup(settings), new GroovyCodeFormatCleanUp(FormatKind.FORMAT) };
         } else if (doImports) {
