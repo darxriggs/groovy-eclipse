@@ -46,7 +46,7 @@ class A {
         method1()
         method1(); method2()
 
-        for (int i = 0; i < 10; i++) { 1; 2; }
+        for (int i = 0; i < 10; i++) { 1; 2 }
     }
 }
 ###end
