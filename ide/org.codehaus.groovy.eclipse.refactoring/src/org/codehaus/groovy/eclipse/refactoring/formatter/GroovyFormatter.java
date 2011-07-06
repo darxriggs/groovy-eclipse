@@ -39,5 +39,5 @@ public abstract class GroovyFormatter {
      *
      * @return the text edit
      */
-    public abstract TextEdit format() throws BadLocationException;
+    public abstract TextEdit format();
 }

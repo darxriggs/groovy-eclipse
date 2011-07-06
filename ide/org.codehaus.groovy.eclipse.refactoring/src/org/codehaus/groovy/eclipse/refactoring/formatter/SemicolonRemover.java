@@ -18,6 +18,7 @@ package org.codehaus.groovy.eclipse.refactoring.formatter;
 import java.util.List;
 
 import org.codehaus.greclipse.GroovyTokenTypeBridge;
+import org.codehaus.groovy.eclipse.core.GroovyCore;
 import org.codehaus.groovy.eclipse.core.util.ListUtil;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -41,15 +42,19 @@ public class SemicolonRemover extends GroovyFormatter {
     }
 
     @Override
-    public TextEdit format() throws BadLocationException {
+    public TextEdit format() {
         TextEdit textEdit = new MultiTextEdit();
 
-        List<Token> tokens = scanner.getTokens(selection);
-        for (Token token : tokens) {
-            Token nextToken = scanner.getNextToken(token);
+        try {
+            List<Token> tokens = scanner.getTokens(selection);
+            for (Token token : tokens) {
+                Token nextToken = scanner.getNextToken(token);
 
-            if (isSemicolon(token) && (nextToken == null || isDelimiter(nextToken)))
-                addSemicolonRemoval(textEdit, token);
+                if (isSemicolon(token) && (nextToken == null || isDelimiter(nextToken)))
+                    addSemicolonRemoval(textEdit, token);
+            }
+        } catch (BadLocationException e) {
+            GroovyCore.logException("Cannot perform semicolon removal.", e);
         }
 
         return textEdit;
