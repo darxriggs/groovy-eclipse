@@ -110,7 +110,6 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
     }
 
     private void initCodebase() throws Exception {
-
         GroovyCore.trace(formattedDocument.get());
         tokens = new KlenkDocumentScanner(formattedDocument);
         rootNode = ASTTools.getASTNodeFromSource(formattedDocument.get());
@@ -292,7 +291,7 @@ public class DefaultGroovyFormatter extends GroovyFormatter {
     }
 
     /**
-     * Returns a Sting of spaces / tabs accordung to the configuration
+     * Returns a String of spaces / tabs according to the configuration
      *
      * @param intentation
      *            the actual indentation level in 'indentation units'
