@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2009 the original author or authors.
+ * Copyright 2009-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.codehaus.groovy.eclipse.refactoring.actions;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,34 +41,39 @@ public class GroovyCleanupPostSaveListener extends CleanUpPostSaveListener imple
 
     @Override
     protected ICleanUp[] getCleanUps(Map settings, Set ids) {
-        ICleanUp[] cleanups = JavaPlugin.getDefault().getCleanUpRegistry().createCleanUps(ids);
+        ICleanUp[] javaCleanups = JavaPlugin.getDefault().getCleanUpRegistry().createCleanUps(ids);
         CleanUpOptions options = new MapCleanUpOptions(settings);
         boolean doImports = false;
         boolean doFormat = false;
         boolean doIndent = false;
 
-        for (ICleanUp cleanup : cleanups) {
-            if (cleanup instanceof ImportsCleanUp && options.isEnabled(CleanUpConstants.ORGANIZE_IMPORTS)) {
+        for (ICleanUp cleanup : javaCleanups) {
+            if (cleanups instanceof ImportsCleanUp && options.isEnabled(CleanUpConstants.ORGANIZE_IMPORTS)) {
                 doImports = true;
             } else if (cleanup instanceof CodeFormatCleanUp) {
-                if (options.isEnabled(CleanUpConstants.FORMAT_SOURCE_CODE)
-                        || options.isEnabled(CleanUpConstants.FORMAT_SOURCE_CODE_CHANGES_ONLY)) {
+                if (options.isEnabled(CleanUpConstants.FORMAT_SOURCE_CODE)) {
+                    // FIXKDV: commented out option below is ignored, does
+                    // formatter have a function to only format portion of file?
+                    // options.isEnabled(CleanUpConstants.FORMAT_SOURCE_CODE_CHANGES_ONLY))
                     doFormat = true;
-                } else if (options.isEnabled(CleanUpConstants.FORMAT_CORRECT_INDENTATION)
-                        || options.isEnabled(CleanUpConstants.FORMAT_REMOVE_TRAILING_WHITESPACES)) {
+                } else if (options.isEnabled(CleanUpConstants.FORMAT_CORRECT_INDENTATION)) {
+                    // FIXKDV: can we support this:
+                    // CleanUpConstants.FORMAT_REMOVE_TRAILING_WHITESPACES)) ?
                     doIndent = true;
                 }
             }
         }
 
-        if (doImports && doFormat) {
-            return new ICleanUp[] { new OrganizeGroovyImportsCleanUp(settings), new GroovyCodeFormatCleanUp(FormatKind.FORMAT) };
-        } else if (doImports) {
-            return new ICleanUp[] { new OrganizeGroovyImportsCleanUp(settings) };
-        } else if (doFormat) {
-            return new ICleanUp[] { new GroovyCodeFormatCleanUp(FormatKind.FORMAT) };
-        } else {
-            return new ICleanUp[0];
+        List<ICleanUp> result = new ArrayList<ICleanUp>(2);
+        if (doImports) {
+            result.add(new GroovyImportsCleanup(settings));
         }
+        if (doFormat) {
+            result.add(new GroovyCodeFormatCleanUp(FormatKind.FORMAT));
+        } else if (doIndent) {
+            // indent == true && format == false
+            result.add(new GroovyCodeFormatCleanUp(FormatKind.INDENT_ONLY));
+        }
+        return result.toArray(new ICleanUp[result.size()]);
     }
 }
