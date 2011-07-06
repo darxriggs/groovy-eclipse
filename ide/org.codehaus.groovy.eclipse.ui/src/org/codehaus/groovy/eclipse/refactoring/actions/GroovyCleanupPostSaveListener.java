@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.groovy.eclipse.GroovyPlugin;
+import org.codehaus.groovy.eclipse.refactoring.PreferenceConstants;
 import org.eclipse.jdt.internal.corext.fix.CleanUpConstants;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.fix.CodeFormatCleanUp;
@@ -28,6 +30,7 @@ import org.eclipse.jdt.internal.ui.fix.MapCleanUpOptions;
 import org.eclipse.jdt.internal.ui.javaeditor.saveparticipant.IPostSaveListener;
 import org.eclipse.jdt.ui.cleanup.CleanUpOptions;
 import org.eclipse.jdt.ui.cleanup.ICleanUp;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * Sub class of {@link CleanUpPostSaveListener} so that we can use only
@@ -40,14 +43,18 @@ public class GroovyCleanupPostSaveListener extends CleanUpPostSaveListener imple
 
     @Override
     protected ICleanUp[] getCleanUps(Map settings, Set ids) {
-        ICleanUp[] javaCleanups = JavaPlugin.getDefault().getCleanUpRegistry().createCleanUps(ids);
+        ICleanUp[] javaCleanUps = JavaPlugin.getDefault().getCleanUpRegistry().createCleanUps(ids);
         CleanUpOptions options = new MapCleanUpOptions(settings);
         boolean doImports = false;
         boolean doFormat = false;
         boolean doIndent = false;
 
-        for (ICleanUp cleanup : javaCleanups) {
-            if (cleanups instanceof ImportsCleanUp && options.isEnabled(CleanUpConstants.ORGANIZE_IMPORTS)) {
+        IPreferenceStore groovyPreferences = GroovyPlugin.getDefault().getPreferenceStore();
+        boolean doSemicolonRemoval = groovyPreferences.getBoolean(PreferenceConstants.GROOVY_SAVE_ACTION_REMOVE_UNNECESSARY_SEMICOLONS);
+        boolean doWhitespaceRemoval = groovyPreferences.getBoolean(PreferenceConstants.GROOVY_SAVE_ACTION_REMOVE_TRAILING_WHITESPACES);
+
+        for (ICleanUp cleanup : javaCleanUps) {
+            if (cleanup instanceof ImportsCleanUp && options.isEnabled(CleanUpConstants.ORGANIZE_IMPORTS)) {
                 doImports = true;
             } else if (cleanup instanceof CodeFormatCleanUp) {
                 if (options.isEnabled(CleanUpConstants.FORMAT_SOURCE_CODE)) {
@@ -63,16 +70,26 @@ public class GroovyCleanupPostSaveListener extends CleanUpPostSaveListener imple
             }
         }
 
-        List<ICleanUp> result = new ArrayList<ICleanUp>(2);
+        List<ICleanUp> groovyCleanUps = new ArrayList<ICleanUp>();
+
         if (doImports) {
-            result.add(new GroovyImportsCleanup(settings));
+            groovyCleanUps.add(new GroovyImportsCleanUp());
         }
         if (doFormat) {
-            result.add(new GroovyCodeFormatCleanUp(FormatKind.FORMAT));
+            groovyCleanUps.add(new GroovyCodeFormatCleanUp(FormatKind.FORMAT));
         } else if (doIndent) {
             // indent == true && format == false
-            result.add(new GroovyCodeFormatCleanUp(FormatKind.INDENT_ONLY));
+            groovyCleanUps.add(new GroovyCodeFormatCleanUp(FormatKind.INDENT_ONLY));
         }
-        return result.toArray(new ICleanUp[result.size()]);
+
+        if (doSemicolonRemoval) {
+            groovyCleanUps.add(new UnnecessarySemicolonsCleanUp());
+        }
+
+        if (doWhitespaceRemoval) {
+            groovyCleanUps.add(new TrailingWhitespacesCleanUp());
+        }
+
+        return groovyCleanUps.toArray(new ICleanUp[groovyCleanUps.size()]);
     }
 }

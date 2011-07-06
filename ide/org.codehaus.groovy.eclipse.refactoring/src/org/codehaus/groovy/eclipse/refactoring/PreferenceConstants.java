@@ -27,6 +27,7 @@ public class PreferenceConstants {
 
     public static final String P_PATH = "pathPreference";
 
+    // Formatter
     public static final String GROOVY_FORMATTER_INDENTATION = DefaultCodeFormatterConstants.FORMATTER_TAB_CHAR;
     public static final String GROOVY_FORMATTER_INDENTATION_SIZE = DefaultCodeFormatterConstants.FORMATTER_INDENTATION_SIZE;
     public static final String GROOVY_FORMATTER_TAB_SIZE = DefaultCodeFormatterConstants.FORMATTER_TAB_SIZE;
@@ -38,4 +39,8 @@ public class PreferenceConstants {
     public static final String GROOVY_FORMATTER_MAX_LINELENGTH = "groovy.formatter.line.maxlength";
 
     public static final String GROOVY_FORMATTER_REMOVE_UNNECESSARY_SEMICOLONS = "groovy.formatter.remove.unnecessary.semicolons";
+
+    // Save Actions
+    public static final String GROOVY_SAVE_ACTION_REMOVE_TRAILING_WHITESPACES = "groovy.SaveAction.RemoveTrailingWhitespaces";
+    public static final String GROOVY_SAVE_ACTION_REMOVE_UNNECESSARY_SEMICOLONS = "groovy.SaveAction.RemoveUnnecessarySemicolons";
 }
