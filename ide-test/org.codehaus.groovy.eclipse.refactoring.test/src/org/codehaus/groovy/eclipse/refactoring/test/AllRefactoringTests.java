@@ -27,6 +27,7 @@ import org.codehaus.groovy.eclipse.refactoring.test.extract.StaticFragmentChecke
 import org.codehaus.groovy.eclipse.refactoring.test.extractMethod.ExtractMethodTestSuite;
 import org.codehaus.groovy.eclipse.refactoring.test.formatter.FormatterTestSuite;
 import org.codehaus.groovy.eclipse.refactoring.test.formatter.SemicolonRemoverTests;
+import org.codehaus.groovy.eclipse.refactoring.test.formatter.WhitespaceRemoverTests;
 import org.codehaus.groovy.eclipse.refactoring.test.rename.MoveCURefactoringTests;
 import org.codehaus.groovy.eclipse.refactoring.test.rename.RenameFieldTests;
 import org.codehaus.groovy.eclipse.refactoring.test.rename.RenameLocalTests;
@@ -61,6 +62,7 @@ public class AllRefactoringTests {
         // formatting and indenting
         suite.addTest(FormatterTestSuite.suite());
         suite.addTest(new TestSuite(SemicolonRemoverTests.class));
+        suite.addTest(new TestSuite(WhitespaceRemoverTests.class));
 
         return suite;
     }
