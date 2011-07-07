@@ -15,16 +15,31 @@ removeUnnecessarySemicolons=true
 import java.lang.Math;
 
 class A {
-    def method() {
+    
+    def x;
+        def y;
+        
+                def method1()
+    {
+                    method2()  ;
+                       method2();	
+            method2();  	  
+        }
+    
+        static constraints =
+        { 'test';
+        }
+        
+    def method2() {
         def a = 1; def b = 2;
         def c = 'spaces before and after the semicolon'   ;   
-        def d = { -> };
+        def d = { -> true; };
 
-        method1();
-        method1(); method2();
+        method3();
+            method3(); method3();  
 
         for (int i = 0; i < 10; i++) { 1; 2; }
-    }
+}
 }
 ###exp
 /* multi-line; text1;
@@ -38,13 +53,27 @@ class A {
 import java.lang.Math
 
 class A {
-    def method() {
+
+    def x
+    def y
+
+    def method1()
+    {
+        method2()
+        method2()
+        method2()
+    }
+
+    static constraints =
+    { 'test' }
+
+    def method2() {
         def a = 1; def b = 2
         def c = 'spaces before and after the semicolon'
-        def d = { -> }
+        def d = { -> true }
 
-        method1()
-        method1(); method2()
+        method3()
+        method3(); method3()
 
         for (int i = 0; i < 10; i++) { 1; 2 }
     }
