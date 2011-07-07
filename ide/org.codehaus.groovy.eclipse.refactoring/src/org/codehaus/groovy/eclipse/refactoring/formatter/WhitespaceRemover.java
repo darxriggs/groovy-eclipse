@@ -24,6 +24,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.text.edits.DeleteEdit;
+import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.TextEdit;
 
@@ -33,15 +34,19 @@ import org.eclipse.text.edits.TextEdit;
 public class WhitespaceRemover extends GroovyFormatter {
 
     private static final Pattern TRAILING_WHITESPACE_PATTERN = Pattern.compile("\\s+$");
+    private final MultiTextEdit edits;
 
     public WhitespaceRemover(ITextSelection sel, IDocument doc) {
+        this(sel, doc, new MultiTextEdit());
+    }
+
+    public WhitespaceRemover(ITextSelection sel, IDocument doc, MultiTextEdit edits) {
         super(sel, doc);
+        this.edits = edits;
     }
 
     @Override
     public TextEdit format() {
-        TextEdit textEdit = new MultiTextEdit();
-
         try {
             for (int i = 0; i < document.getNumberOfLines(); i++) {
                 IRegion lineInfo = document.getLineInformation(i);
@@ -52,14 +57,22 @@ public class WhitespaceRemover extends GroovyFormatter {
                 if (matcher.find()) {
                     int whitespaceOffset = lineInfo.getOffset() + matcher.start();
                     int whitespaceLength = matcher.end() - matcher.start();
-                    TextEdit deleteWhitespace = new DeleteEdit(whitespaceOffset, whitespaceLength);
-                    textEdit.addChild(deleteWhitespace);
+                    addWhitespaceRemoval(whitespaceOffset, whitespaceLength);
                 }
             }
         } catch (BadLocationException e) {
             GroovyCore.logException("Cannot perform whitespace removal.", e);
         }
 
-        return textEdit;
+        return edits;
+    }
+
+    private void addWhitespaceRemoval(int whitespaceOffset, int whitespaceLength) {
+        TextEdit deleteWhitespace = new DeleteEdit(whitespaceOffset, whitespaceLength);
+        try {
+            edits.addChild(deleteWhitespace);
+        } catch (MalformedTreeException e) {
+            GroovyCore.logWarning("Ignoring conflicting edit: " + deleteWhitespace, e);
+        }
     }
 }

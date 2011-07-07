@@ -24,6 +24,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.text.edits.DeleteEdit;
+import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.TextEdit;
 
@@ -34,30 +35,34 @@ import antlr.Token;
  */
 public class SemicolonRemover extends GroovyFormatter {
 
-    GroovyDocumentScanner scanner;
+    private final GroovyDocumentScanner scanner;
+    private final MultiTextEdit edits;
 
     public SemicolonRemover(ITextSelection sel, IDocument doc) {
+        this(sel, doc, new MultiTextEdit());
+    }
+
+    public SemicolonRemover(ITextSelection sel, IDocument doc, MultiTextEdit edits) {
         super(sel, doc);
-        scanner = new GroovyDocumentScanner(doc);
+        this.edits = edits;
+        this.scanner = new GroovyDocumentScanner(doc);
     }
 
     @Override
     public TextEdit format() {
-        TextEdit textEdit = new MultiTextEdit();
-
         try {
             List<Token> tokens = scanner.getTokens(selection);
             for (Token token : tokens) {
                 Token nextToken = scanner.getNextToken(token);
 
                 if (isSemicolon(token) && (nextToken == null || isDelimiter(nextToken)))
-                    addSemicolonRemoval(textEdit, token);
+                    addSemicolonRemoval(token);
             }
         } catch (BadLocationException e) {
             GroovyCore.logException("Cannot perform semicolon removal.", e);
         }
 
-        return textEdit;
+        return edits;
     }
 
     private boolean isSemicolon(Token token) {
@@ -69,9 +74,13 @@ public class SemicolonRemover extends GroovyFormatter {
         return token != null && delimiterTypes.contains(token.getType());
     }
 
-    private void addSemicolonRemoval(TextEdit textEdit, Token semicolonToken) throws BadLocationException {
+    private void addSemicolonRemoval(Token semicolonToken) throws BadLocationException {
         int semicolonOffset = scanner.getOffset(semicolonToken);
         TextEdit deleteSemicolon = new DeleteEdit(semicolonOffset, 1);
-        textEdit.addChild(deleteSemicolon);
+        try {
+            edits.addChild(deleteSemicolon);
+        } catch (MalformedTreeException e) {
+            GroovyCore.logWarning("Ignoring conflicting edit: " + deleteSemicolon, e);
+        }
     }
 }

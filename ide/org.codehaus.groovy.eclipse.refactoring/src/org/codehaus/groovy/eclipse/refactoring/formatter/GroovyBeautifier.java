@@ -348,9 +348,8 @@ public class GroovyBeautifier {
 
     private void removeUnnecessarySemicolons(MultiTextEdit edits) throws BadLocationException {
         if (preferences.isRemoveUnnecessarySemicolons()) {
-            GroovyFormatter semicolonRemover = new SemicolonRemover(formatter.selection, formatter.document);
-            TextEdit semicolonRemovals = semicolonRemover.format();
-            edits.addChild(semicolonRemovals);
+            GroovyFormatter semicolonRemover = new SemicolonRemover(formatter.selection, formatter.document, edits);
+            semicolonRemover.format();
         }
     }
 
